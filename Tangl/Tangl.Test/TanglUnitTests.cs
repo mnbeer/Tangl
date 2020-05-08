@@ -37,9 +37,14 @@ namespace Tangl.Test
         public string Target => _target;
     }
 
+        class Person
+{
+    public int PersonId {get; set;}
+}
+
         class TTest
         {   
-        [Tangl(target: ""Person.PersonId"")]
+        [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
         public long PersonId { get; set; }
     }
     }";

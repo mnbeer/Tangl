@@ -47,7 +47,24 @@ namespace Tangl
                 if (string.IsNullOrWhiteSpace(targetName)) {
                     continue;
                 }
-
+                var pos = targetName.LastIndexOf('.');
+                var typeName = targetName.Substring(0, pos);
+                var propertyName = targetName.Substring(pos + 1, targetName.Length - pos - 1);
+                var targetClass = context.Compilation.GetTypeByMetadataName(typeName);
+                //var targetSymbols = context.Compilation.GetSymbolsWithName(propertyName);
+                if (targetClass == null)
+                {
+                    // raise missing target type 
+                }
+                var target = (IPropertySymbol)targetClass.GetMembers().FirstOrDefault(m => m.Name == propertyName);
+                if (target == null)
+                {
+                    // raise missing target property 
+                }
+                if (target.Type != propertySymbol.Type )
+                {
+                    // raise differing type warning
+                }
             }
         }
 
