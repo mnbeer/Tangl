@@ -129,4 +129,13 @@
     <value>Type name contains lowercase letters</value>
     <comment>The title of the diagnostic.</comment>
   </data>
+  <data name="MissingTargetTypeDescription" xml:space="preserve">
+    <value>Cannot find type specified in Tangl attribute.</value>
+  </data>
+  <data name="MissingTargetTypeMessageFormat" xml:space="preserve">
+    <value>Type name '{0}' not found.</value>
+  </data>
+  <data name="MissingTargetTypeTitle" xml:space="preserve">
+    <value>Missing target type</value>
+  </data>
 </root>

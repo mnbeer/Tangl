@@ -44,18 +44,18 @@ namespace Tangl.Test
 
         class TTest
         {   
-        [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
+        [Tangl(target: ""ConsoleApplication1.Persons.PersonId"")]
         public long PersonId { get; set; }
     }
     }";
             var expected = new DiagnosticResult
             {
                 Id = "Tangl",
-                Message = String.Format("Type name '{0}' contains lowercase letters", "TypeName"),
+                Message = String.Format("Type name '{0}' not found.", "ConsoleApplication1.Persons"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 11, 15)
+                            new DiagnosticResultLocation("Test0.cs", 31, 21)
                         }
             };
 

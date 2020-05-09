@@ -20,17 +20,32 @@ namespace Tangl
         private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
+
+        // Missing Target Type
+        private static readonly LocalizableString MissingTargetTypeTitle = new LocalizableResourceString(nameof(Resources.MissingTargetTypeTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MissingTargetTypeMessageFormat = new LocalizableResourceString(nameof(Resources.MissingTargetTypeMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MissingTargetTypeDescription = new LocalizableResourceString(nameof(Resources.MissingTargetTypeDescription), Resources.ResourceManager, typeof(Resources));
+
         private const string Category = "Naming";
+
+        private static DiagnosticDescriptor MissingTargetTypeRule = new DiagnosticDescriptor(
+            DiagnosticId,
+            MissingTargetTypeTitle,
+            MissingTargetTypeMessageFormat, 
+            Category,
+            DiagnosticSeverity.Warning, 
+            isEnabledByDefault: true, 
+            description: MissingTargetTypeDescription);
 
         private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule, MissingTargetTypeRule); } }
 
         public override void Initialize(AnalysisContext context)
         {
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSymbolAction(AnalyzeProperty, SymbolKind.Property);
         }
 
@@ -54,7 +69,9 @@ namespace Tangl
                 //var targetSymbols = context.Compilation.GetSymbolsWithName(propertyName);
                 if (targetClass == null)
                 {
-                    // raise missing target type 
+                    var diagnostic = Diagnostic.Create(MissingTargetTypeRule, propertySymbol.Locations[0], typeName);
+                    context.ReportDiagnostic(diagnostic);
+                    return;
                 }
                 var target = (IPropertySymbol)targetClass.GetMembers().FirstOrDefault(m => m.Name == propertyName);
                 if (target == null)
