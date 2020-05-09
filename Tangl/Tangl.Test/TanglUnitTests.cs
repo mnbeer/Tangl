@@ -12,10 +12,7 @@ namespace Tangl.Test
     public class UnitTest : CodeFixVerifier
     {
 
-        [TestMethod]
-        public void TangleTestMethod()
-        {
-            var test = @"
+        const string testCore = @"
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -37,11 +34,35 @@ namespace Tangl.Test
         public string Target => _target;
     }
 
-        class Person
-{
-    public int PersonId {get; set;}
-}
+    class Person
+    {
+        public int PersonId {get; set;}
+    }    
+";
+        /// <summary>
+        /// Make sure a basic Tangl attribute has no diagnostics
+        /// </summary>
+        [TestMethod]
+        public void TanglSimplePassingTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
+        public long PersonId { get; set; }
+    }
+    }";
 
+            VerifyCSharpDiagnostic(test);
+        }
+        
+        /// <summary>
+        /// Test of typo in targeted class name
+        /// </summary>
+        [TestMethod]
+        public void TanglMissingTargetTypeTest()
+        {
+            var test = testCore + @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Persons.PersonId"")]
@@ -60,6 +81,65 @@ namespace Tangl.Test
             };
 
             VerifyCSharpDiagnostic(test, expected);
+        }
+
+        //        var fixtest = @"
+        //using System;
+        //using System.Collections.Generic;
+        //using System.Linq;
+        //using System.Text;
+        //using System.Threading.Tasks;
+        //using System.Diagnostics;
+
+        //namespace ConsoleApplication1
+        //{
+        //    class TYPENAME
+        //    {   
+        //    }
+        //}";
+        //        VerifyCSharpFix(test, fixtest);
+
+
+        //No diagnostics expected to show up
+        [TestMethod]
+        public void NoCodeTest
+            ()
+        {
+            var test = @"";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+    //    //Diagnostic and CodeFix both triggered and checked for
+    //    [TestMethod]
+    //    public void TestMethod2()
+    //    {
+    //        var test = @"
+    //using System;
+    //using System.Collections.Generic;
+    //using System.Linq;
+    //using System.Text;
+    //using System.Threading.Tasks;
+    //using System.Diagnostics;
+
+    //namespace ConsoleApplication1
+    //{
+    //    class TypeName
+    //    {   
+    //    }
+    //}";
+    //        var expected = new DiagnosticResult
+    //        {
+    //            Id = "Tangl",
+    //            Message = String.Format("Type name '{0}' contains lowercase letters", "TypeName"),
+    //            Severity = DiagnosticSeverity.Warning,
+    //            Locations =
+    //                new[] {
+    //                        new DiagnosticResultLocation("Test0.cs", 11, 15)
+    //                    }
+    //        };
+
+    //        VerifyCSharpDiagnostic(test, expected);
 
     //        var fixtest = @"
     //using System;
@@ -76,66 +156,7 @@ namespace Tangl.Test
     //    }
     //}";
     //        VerifyCSharpFix(test, fixtest);
-        }
-
-
-
-        //No diagnostics expected to show up
-        [TestMethod]
-        public void TestMethod1()
-        {
-            var test = @"";
-
-            VerifyCSharpDiagnostic(test);
-        }
-
-        //Diagnostic and CodeFix both triggered and checked for
-        [TestMethod]
-        public void TestMethod2()
-        {
-            var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
-    {
-        class TypeName
-        {   
-        }
-    }";
-            var expected = new DiagnosticResult
-            {
-                Id = "Tangl",
-                Message = String.Format("Type name '{0}' contains lowercase letters", "TypeName"),
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 11, 15)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
-
-            var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
-    {
-        class TYPENAME
-        {   
-        }
-    }";
-            VerifyCSharpFix(test, fixtest);
-        }
+    //    }
 
         protected override CodeFixProvider GetCSharpCodeFixProvider()
         {
