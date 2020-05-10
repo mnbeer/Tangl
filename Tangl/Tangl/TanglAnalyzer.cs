@@ -26,6 +26,16 @@ namespace Tangl
         private static readonly LocalizableString MissingTargetTypeMessageFormat = new LocalizableResourceString(nameof(Resources.MissingTargetTypeMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MissingTargetTypeDescription = new LocalizableResourceString(nameof(Resources.MissingTargetTypeDescription), Resources.ResourceManager, typeof(Resources));
 
+        // Missing Target
+        private static readonly LocalizableString MissingTargetTitle = new LocalizableResourceString(nameof(Resources.MissingTargetTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MissingTargetMessageFormat = new LocalizableResourceString(nameof(Resources.MissingTargetMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MissingTargetDescription = new LocalizableResourceString(nameof(Resources.MissingTargetDescription), Resources.ResourceManager, typeof(Resources));
+        
+        // Differing Types
+        private static readonly LocalizableString DifferingTypesTitle = new LocalizableResourceString(nameof(Resources.DifferingTypesTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString DifferingTypesMessageFormat = new LocalizableResourceString(nameof(Resources.DifferingTypesMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString DifferingTypesDescription = new LocalizableResourceString(nameof(Resources.DifferingTypesDescription), Resources.ResourceManager, typeof(Resources));
+
         private const string Category = "Naming";
 
         private static DiagnosticDescriptor MissingTargetTypeRule = new DiagnosticDescriptor(
@@ -36,6 +46,24 @@ namespace Tangl
             DiagnosticSeverity.Warning, 
             isEnabledByDefault: true, 
             description: MissingTargetTypeDescription);
+
+        private static DiagnosticDescriptor MissingTargetRule = new DiagnosticDescriptor(
+            DiagnosticId,
+            MissingTargetTitle,
+            MissingTargetMessageFormat,
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: MissingTargetDescription);
+
+        private static DiagnosticDescriptor DifferingTypesRule = new DiagnosticDescriptor(
+            DiagnosticId,
+            DifferingTypesTitle,
+            DifferingTypesMessageFormat,
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: DifferingTypesDescription);
 
         private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
@@ -76,11 +104,15 @@ namespace Tangl
                 var target = (IPropertySymbol)targetClass.GetMembers().FirstOrDefault(m => m.Name == propertyName);
                 if (target == null)
                 {
-                    // raise missing target property 
+                    var diagnostic = Diagnostic.Create(MissingTargetRule, propertySymbol.Locations[0], targetName);
+                    context.ReportDiagnostic(diagnostic);
+                    return;
                 }
                 if (target.Type != propertySymbol.Type )
                 {
-                    // raise differing type warning
+                    var diagnostic = Diagnostic.Create(DifferingTypesRule, propertySymbol.Locations[0], propertySymbol.ToString(), targetName);
+                    context.ReportDiagnostic(diagnostic);
+                    return;
                 }
             }
         }

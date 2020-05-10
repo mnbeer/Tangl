@@ -89,6 +89,60 @@ namespace Tangl {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tangl and Tangl target have differing types..
+        /// </summary>
+        internal static string DifferingTypesDescription {
+            get {
+                return ResourceManager.GetString("DifferingTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tangle &apos;{0}&apos; and Tangl target &apos;{1}&apos; have differing types..
+        /// </summary>
+        internal static string DifferingTypesMessageFormat {
+            get {
+                return ResourceManager.GetString("DifferingTypesMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Differing Tangl and Tangl target types.
+        /// </summary>
+        internal static string DifferingTypesTitle {
+            get {
+                return ResourceManager.GetString("DifferingTypesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find Tangl target..
+        /// </summary>
+        internal static string MissingTargetDescription {
+            get {
+                return ResourceManager.GetString("MissingTargetDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find Tangl target &apos;{0}&apos;..
+        /// </summary>
+        internal static string MissingTargetMessageFormat {
+            get {
+                return ResourceManager.GetString("MissingTargetMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing Tangl target..
+        /// </summary>
+        internal static string MissingTargetTitle {
+            get {
+                return ResourceManager.GetString("MissingTargetTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find type specified in Tangl attribute..
         /// </summary>
         internal static string MissingTargetTypeDescription {

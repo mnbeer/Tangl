@@ -129,6 +129,24 @@
     <value>Type name contains lowercase letters</value>
     <comment>The title of the diagnostic.</comment>
   </data>
+  <data name="DifferingTypesDescription" xml:space="preserve">
+    <value>Tangl and Tangl target have differing types.</value>
+  </data>
+  <data name="DifferingTypesMessageFormat" xml:space="preserve">
+    <value>Tangle '{0}' and Tangl target '{1}' have differing types.</value>
+  </data>
+  <data name="DifferingTypesTitle" xml:space="preserve">
+    <value>Differing Tangl and Tangl target types</value>
+  </data>
+  <data name="MissingTargetDescription" xml:space="preserve">
+    <value>Cannot find Tangl target.</value>
+  </data>
+  <data name="MissingTargetMessageFormat" xml:space="preserve">
+    <value>Cannot find Tangl target '{0}'.</value>
+  </data>
+  <data name="MissingTargetTitle" xml:space="preserve">
+    <value>Missing Tangl target.</value>
+  </data>
   <data name="MissingTargetTypeDescription" xml:space="preserve">
     <value>Cannot find type specified in Tangl attribute.</value>
   </data>

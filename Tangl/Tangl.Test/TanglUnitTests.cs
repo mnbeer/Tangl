@@ -83,6 +83,62 @@ namespace Tangl.Test
             VerifyCSharpDiagnostic(test, expected);
         }
 
+        /// <summary>
+        /// Test of target name does not exist in targeted type 
+        /// </summary>
+        [TestMethod]
+        public void TanglMissingTargetTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.Id"")]
+        public long PersonId { get; set; }
+    }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = "Tangl",
+                Message = String.Format("Cannot find Tangl target '{0}'.", "ConsoleApplication1.Person.Id"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 31, 21)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+        }
+
+        /// <summary>
+        /// Test of target name does not exist in targeted type 
+        /// </summary>
+        [TestMethod]
+        public void TanglDifferingTypesTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
+        public long PersonId { get; set; }
+    }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = "Tangl",
+                Message = String.Format("Tangle '{0}' and Tangl target '{1}' have differing types.",
+                "ConsoleApplication1.TTest.PersonId", 
+                "ConsoleApplication1.Person.PersonId"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 31, 21)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+        }
+
         //        var fixtest = @"
         //using System;
         //using System.Collections.Generic;
