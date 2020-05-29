@@ -37,7 +37,14 @@ namespace Tangl.Test
     class Person
     {
         public int PersonId {get; set;}
+        public Person Spouse {get; set;}
+        public DateTime? Birthday {get; set;}
     }    
+
+    class Contact : Person
+    {
+        public string Relationship {get; set;}
+    } 
 ";
         /// <summary>
         /// Make sure a basic Tangl attribute has no diagnostics
@@ -49,13 +56,32 @@ namespace Tangl.Test
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
-        public long PersonId { get; set; }
+        public int PersonId { get; set; }
+
     }
     }";
 
             VerifyCSharpDiagnostic(test);
         }
-        
+
+        /// <summary>
+        /// Make sure a basic Tangl attribute has no diagnostics
+        /// </summary>
+        [TestMethod]
+        public void TanglSimpleNullablePassingTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.Birthday"")]
+        public DateTime? Birthday { get; set; }
+
+    }
+    }";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
         /// <summary>
         /// Test of typo in targeted class name
         /// </summary>
@@ -94,6 +120,9 @@ namespace Tangl.Test
         {   
         [Tangl(target: ""ConsoleApplication1.Person.Id"")]
         public long PersonId { get; set; }
+
+        [Tangl(target: ""ConsoleApplication1.Contact"")]
+        public Contact Spouse { get; set; }
     }
     }";
             var expected = new DiagnosticResult
@@ -114,7 +143,7 @@ namespace Tangl.Test
         /// Test of target name does not exist in targeted type 
         /// </summary>
         [TestMethod]
-        public void TanglDifferingTypesTest()
+        public void TanglDifferingValueTypesTest()
         {
             var test = testCore + @"
         class TTest
@@ -132,11 +161,73 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 31, 21)
+                            new DiagnosticResultLocation("Test0.cs", 37, 21)
                         }
             };
 
             VerifyCSharpDiagnostic(test, expected);
+            VerifyCSharpFix(test, test.Replace("public long PersonId", "public int PersonId"));
+        }
+
+        /// <summary>
+        /// Test of target name does not exist in targeted type 
+        /// </summary>
+        [TestMethod]
+        public void TanglDifferingNullableTypesTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.Birthday"")]
+        public DateTime Birthday { get; set; }
+    }
+    }";
+            
+            var expected = new DiagnosticResult
+            {
+                Id = "Tangl",
+                Message = String.Format("Tangle '{0}' and Tangl target '{1}' have differing types.",
+                "ConsoleApplication1.TTest.PersonId",
+                "ConsoleApplication1.Person.PersonId"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 37, 21)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+            VerifyCSharpFix(test, test.Replace("public DateTime Birthday", "public DateTime? Birthday"));
+        }
+
+        /// <summary>
+        /// Test of target name does not exist in targeted type 
+        /// </summary>
+        [TestMethod]
+        public void TanglDifferingReferenceTypesTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.Spouse"")]
+        public Contact Partner { get; set; }
+    }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = "Tangl",
+                Message = String.Format("Tangle '{0}' and Tangl target '{1}' have differing types.",
+                "ConsoleApplication1.TTest.Partner",
+                "ConsoleApplication1.Person.Spouse"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 37, 24)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+            VerifyCSharpFix(test, test.Replace("public Contact Partner", "public Person Partner"));
         }
 
         //        var fixtest = @"

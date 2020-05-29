@@ -18,11 +18,11 @@ namespace Tangl
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(TanglCodeFixProvider)), Shared]
     public class TanglCodeFixProvider : CodeFixProvider
     {
-        private const string title = "Make uppercase";
+        private const string title = "Change type to match target";
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(TanglAnalyzer.DiagnosticId); }
+            get { return ImmutableArray.Create(TanglAnalyzer.DifferingTypesId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -40,34 +40,86 @@ namespace Tangl
             var diagnosticSpan = diagnostic.Location.SourceSpan;
 
             // Find the type declaration identified by the diagnostic.
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+            //var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().First();
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: title,
-                    createChangedSolution: c => MakeUppercaseAsync(context.Document, declaration, c),
+                    createChangedDocument: c => UpdateType(diagnostic, context.Document, declaration, c),
                     equivalenceKey: title),
                 diagnostic);
         }
 
-        private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Document> UpdateType(Diagnostic diagnostic, Document document, PropertyDeclarationSyntax typeDecl, CancellationToken cancellationToken)
         {
             // Compute new uppercase name.
-            var identifierToken = typeDecl.Identifier;
-            var newName = identifierToken.Text.ToUpperInvariant();
+            //var identifierToken = typeDecl.Identifier;
+            //var newName = identifierToken.Text.ToUpperInvariant();
+            var targetName = diagnostic.Properties["TargetName"];
+            var fullTargetType = diagnostic.Properties["TargetType"];
+            var genericStart = fullTargetType.IndexOf('<');
+            var targetType = genericStart > 1 ?
+                fullTargetType.Substring(0, genericStart).Split('.').Last() 
+                    + fullTargetType.Substring(genericStart) :
+                fullTargetType.Split('.').Last();
+            
+            //var typeToken = typeDecl.Type.Keyword;
 
-            // Get the symbol representing the type to be renamed.
             var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+            var targetSymbol = semanticModel.Compilation.GetTypeByMetadataName(targetName);
             var typeSymbol = semanticModel.GetDeclaredSymbol(typeDecl, cancellationToken);
+            //var targetTypeAsString = typeSymbol.ToDisplayString();
+            var predefinedType = typeDecl.Type;
+            var firstToken = predefinedType.GetFirstToken();
+            var leadingTrivia = firstToken.LeadingTrivia;
+            var trailingTrivia = firstToken.TrailingTrivia;
+            var typeToken = SyntaxFactory.PredefinedType(SyntaxFactory.Token(leadingTrivia, SyntaxKind.IntKeyword, trailingTrivia));
+            //var typeToken = SyntaxFactory.PredefinedType(SyntaxFactory.Token(leadingTrivia, targetSymbol.Syn, trailingTrivia));
+            //typeDecl.WithType(SyntaxFactory.Identifier.UpdateType()
+            var identifierTypeToken = SyntaxFactory.Identifier(leadingTrivia, targetType, trailingTrivia);
+            var identifierNode = SyntaxFactory.IdentifierName(identifierTypeToken);
 
-            // Produce a new solution that has all references to that type renamed, including the declaration.
-            var originalSolution = document.Project.Solution;
-            var optionSet = originalSolution.Workspace.Options;
-            var newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, typeSymbol, newName, optionSet, cancellationToken).ConfigureAwait(false);
+            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken);
+            var newRoot = oldRoot.ReplaceNode(predefinedType, identifierNode);
 
-            // Return the new solution with the now-uppercase type name.
-            return newSolution;
+            return document.WithSyntaxRoot(newRoot);
+
+            //var identifierToken = typeDecl.Token;
+            //var updatedText = identifierToken.Text.Replace("myword", "anotherword");
+            //var valueText = identifierToken.ValueText.Replace("myword", "anotherword");
+            //var newToken = SyntaxFactory.Literal(identifierTok(en.LeadingTrivia, updatedText, valueText, identifierToken.TrailingTrivia);
+
+            //var sourceText = await typeDecl.SyntaxTree.GetTextAsync(cancellationToken);
+            //// update document by changing the source text
+            //return document.WithText(sourceText.WithChanges(new TextChange(identifierToken.FullSpan, newToken.ToFullString())));
         }
     }
+
+    //    private IPropertySymbol GetTarget(SemanticModel semanticModel, IPropertySymbol propertySymbol)
+    //    {
+    //        var tangls = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == "TanglAttribute");
+    //        // Pull all arguments from the attribute constructor
+    //        foreach (var tangl in tangls.Where(t => t.ConstructorArguments.Any()))
+    //        {
+    //            // The first argument has to be the name of the property this is entangled with
+    //            var targetName = tangl.ConstructorArguments.First().Value.ToString();
+    //            if (string.IsNullOrWhiteSpace(targetName))
+    //            {
+    //                continue;
+    //            }
+    //            var pos = targetName.LastIndexOf('.');
+    //            var typeName = targetName.Substring(0, pos);
+    //            var propertyName = targetName.Substring(pos + 1, targetName.Length - pos - 1);
+    //            var targetClass = semanticModel.Compilation.GetTypeByMetadataName(typeName);
+    //            if (targetClass != null)
+    //            {
+    //                var target = (IPropertySymbol)targetClass.GetMembers().FirstOrDefault(m => m.Name == propertyName);
+    //                return target;
+    //            }
+    //        }
+    //        return null;
+    //    }
+    //}
 }

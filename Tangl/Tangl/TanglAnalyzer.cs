@@ -13,8 +13,6 @@ namespace Tangl
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class TanglAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "Tangl";
-
         // You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
         // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Localizing%20Analyzers.md for more on localization
         private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
@@ -22,16 +20,19 @@ namespace Tangl
         private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
 
         // Missing Target Type
+        public const string MissingTargetTypeId = "MissingTanglTargetType";
         private static readonly LocalizableString MissingTargetTypeTitle = new LocalizableResourceString(nameof(Resources.MissingTargetTypeTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MissingTargetTypeMessageFormat = new LocalizableResourceString(nameof(Resources.MissingTargetTypeMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MissingTargetTypeDescription = new LocalizableResourceString(nameof(Resources.MissingTargetTypeDescription), Resources.ResourceManager, typeof(Resources));
 
         // Missing Target
+        public const string MissingTargetId = "MissingTanglTarget";
         private static readonly LocalizableString MissingTargetTitle = new LocalizableResourceString(nameof(Resources.MissingTargetTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MissingTargetMessageFormat = new LocalizableResourceString(nameof(Resources.MissingTargetMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MissingTargetDescription = new LocalizableResourceString(nameof(Resources.MissingTargetDescription), Resources.ResourceManager, typeof(Resources));
-        
+
         // Differing Types
+        public const string DifferingTypesId = "DifferingTanglTypes";
         private static readonly LocalizableString DifferingTypesTitle = new LocalizableResourceString(nameof(Resources.DifferingTypesTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString DifferingTypesMessageFormat = new LocalizableResourceString(nameof(Resources.DifferingTypesMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString DifferingTypesDescription = new LocalizableResourceString(nameof(Resources.DifferingTypesDescription), Resources.ResourceManager, typeof(Resources));
@@ -39,7 +40,7 @@ namespace Tangl
         private const string Category = "Naming";
 
         private static DiagnosticDescriptor MissingTargetTypeRule = new DiagnosticDescriptor(
-            DiagnosticId,
+            MissingTargetTypeId,
             MissingTargetTypeTitle,
             MissingTargetTypeMessageFormat, 
             Category,
@@ -48,7 +49,7 @@ namespace Tangl
             description: MissingTargetTypeDescription);
 
         private static DiagnosticDescriptor MissingTargetRule = new DiagnosticDescriptor(
-            DiagnosticId,
+            MissingTargetId,
             MissingTargetTitle,
             MissingTargetMessageFormat,
             Category,
@@ -57,7 +58,7 @@ namespace Tangl
             description: MissingTargetDescription);
 
         private static DiagnosticDescriptor DifferingTypesRule = new DiagnosticDescriptor(
-            DiagnosticId,
+            DifferingTypesId,
             DifferingTypesTitle,
             DifferingTypesMessageFormat,
             Category,
@@ -65,9 +66,8 @@ namespace Tangl
             isEnabledByDefault: true,
             description: DifferingTypesDescription);
 
-        private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule, MissingTargetTypeRule); } }
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get 
+            { return ImmutableArray.Create(MissingTargetTypeRule, MissingTargetRule, DifferingTypesRule); } }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -85,8 +85,12 @@ namespace Tangl
             // Pull all arguments from the attribute constructor
             foreach (var tangl in tangls.Where(t => t.ConstructorArguments.Any()))
             {
+                var arg1 = tangl.ConstructorArguments.First();
+                var arg2 = tangl.ConstructorArguments.Skip(1).FirstOrDefault();
                 // The first argument has to be the name of the property this is entangled with
-                var targetName = tangl.ConstructorArguments.First().Value.ToString();
+                var targetName = tangl.ConstructorArguments.Count() == 1 
+                    ? $"{arg1.Value}"
+                    : $"{arg1.Value}.{arg2.Value}";
                 if (string.IsNullOrWhiteSpace(targetName)) {
                     continue;
                 }
@@ -108,28 +112,19 @@ namespace Tangl
                     context.ReportDiagnostic(diagnostic);
                     return;
                 }
-                if (target.Type != propertySymbol.Type )
+                var targetType = (INamedTypeSymbol)target.Type;
+                if (!targetType.IsGenericType && target.Type != propertySymbol.Type  || 
+                    (targetType.IsGenericType && target.Type.ToDisplayString() != propertySymbol.Type.ToDisplayString()))
                 {
-                    var diagnostic = Diagnostic.Create(DifferingTypesRule, propertySymbol.Locations[0], propertySymbol.ToString(), targetName);
+                    var propertyBag = ImmutableDictionary<string, string>.Empty
+                                .Add("TargetName", targetName)
+                                .Add("TargetType", target.Type.ToString());
+                    var diagnostic = Diagnostic.Create(DifferingTypesRule, propertySymbol.Locations[0], propertyBag, propertySymbol.ToString(), targetName);
                     context.ReportDiagnostic(diagnostic);
                     return;
                 }
             }
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
-        {
-            // TODO: Replace the following code with your own analysis, generating Diagnostic objects for any issues you find
-            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
-
-            // Find just those named type symbols with names containing lowercase letters.
-            if (namedTypeSymbol.Name.ToCharArray().Any(char.IsLower))
-            {
-                // For all such symbols, produce a diagnostic.
-                var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
-
-                context.ReportDiagnostic(diagnostic);
-            }
-        }
     }
 }
