@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TestHelper;
-using Tangl;
+using TanglAnalyzer;
 
 namespace Tangl.Test
 {
@@ -312,7 +312,7 @@ namespace Tangl.Test
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new TanglAnalyzer();
+            return new TanglCodeAnalyzer();
         }
     }
 }

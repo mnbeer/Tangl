@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Tangl
+namespace TanglAnalyzer
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(TanglCodeFixProvider)), Shared]
     public class TanglCodeFixProvider : CodeFixProvider
@@ -22,7 +22,7 @@ namespace Tangl
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(TanglAnalyzer.DifferingTypesId); }
+            get { return ImmutableArray.Create(TanglCodeAnalyzer.DifferingTypesId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()

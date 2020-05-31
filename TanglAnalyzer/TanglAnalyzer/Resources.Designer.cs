@@ -8,7 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Tangl {
+namespace TanglAnalyzer
+{
     using System;
     using System.Reflection;
     

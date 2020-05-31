@@ -15,8 +15,8 @@
     <ProjectGuid>{DE3138C1-D274-4457-9513-2174605BC463}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tangl.Vsix</RootNamespace>
-    <AssemblyName>Tangl</AssemblyName>
+    <RootNamespace>TanglAnalyzer.Vsix</RootNamespace>
+    <AssemblyName>TanglAnalyzer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
@@ -54,9 +54,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tangl\Tangl.csproj">
-      <Project>{7E371FB0-10F1-4F13-B24A-C6020F81FD3A}</Project>
-      <Name>Tangl</Name>
+    <ProjectReference Include="..\TanglAnalyzer\TanglAnalyzer.csproj">
+      <Project>{4c3b5f40-22f1-4809-b31f-1bef9c3713e7}</Project>
+      <Name>TanglAnalyzer</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
