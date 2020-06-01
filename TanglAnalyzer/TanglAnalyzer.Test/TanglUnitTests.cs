@@ -97,12 +97,12 @@ namespace Tangl.Test
     }";
             var expected = new DiagnosticResult
             {
-                Id = "Tangl",
+                Id = "MissingTanglTargetType",
                 Message = String.Format("Type name '{0}' not found.", "ConsoleApplication1.Persons"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 31, 21)
+                            new DiagnosticResultLocation("Test0.cs", 38, 21)
                         }
             };
 
@@ -121,18 +121,16 @@ namespace Tangl.Test
         [Tangl(target: ""ConsoleApplication1.Person.Id"")]
         public long PersonId { get; set; }
 
-        [Tangl(target: ""ConsoleApplication1.Contact"")]
-        public Contact Spouse { get; set; }
     }
     }";
             var expected = new DiagnosticResult
             {
-                Id = "Tangl",
+                Id = "MissingTanglTarget",
                 Message = String.Format("Cannot find Tangl target '{0}'.", "ConsoleApplication1.Person.Id"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 31, 21)
+                            new DiagnosticResultLocation("Test0.cs", 38, 21)
                         }
             };
 
@@ -154,14 +152,14 @@ namespace Tangl.Test
     }";
             var expected = new DiagnosticResult
             {
-                Id = "Tangl",
+                Id = "DifferingTanglTypes",
                 Message = String.Format("Tangle '{0}' and Tangl target '{1}' have differing types.",
                 "ConsoleApplication1.TTest.PersonId", 
                 "ConsoleApplication1.Person.PersonId"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 37, 21)
+                            new DiagnosticResultLocation("Test0.cs", 38, 21)
                         }
             };
 
@@ -185,14 +183,14 @@ namespace Tangl.Test
             
             var expected = new DiagnosticResult
             {
-                Id = "Tangl",
+                Id = "DifferingTanglTypes",
                 Message = String.Format("Tangle '{0}' and Tangl target '{1}' have differing types.",
-                "ConsoleApplication1.TTest.PersonId",
-                "ConsoleApplication1.Person.PersonId"),
+                "ConsoleApplication1.TTest.Birthday",
+                "ConsoleApplication1.Person.Birthday"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 37, 21)
+                            new DiagnosticResultLocation("Test0.cs", 38, 25)
                         }
             };
 
@@ -215,14 +213,14 @@ namespace Tangl.Test
     }";
             var expected = new DiagnosticResult
             {
-                Id = "Tangl",
+                Id = "DifferingTanglTypes",
                 Message = String.Format("Tangle '{0}' and Tangl target '{1}' have differing types.",
                 "ConsoleApplication1.TTest.Partner",
                 "ConsoleApplication1.Person.Spouse"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 37, 24)
+                            new DiagnosticResultLocation("Test0.cs", 38, 24)
                         }
             };
 
