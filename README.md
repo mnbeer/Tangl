@@ -8,7 +8,7 @@ The name is (very, very loosely) inspired by quantum entanglement where:
 
 * [What does this repository do?](#what-does-this-repository-do)
 * [Can I see an example](#can-i-see-an-example)
-
+* [Go to the wiki for more info](https://github.com/mnbeer/Tangl/wiki)
 
 ## What does this repository do?
 It allows C# developers to tangl class properties.
