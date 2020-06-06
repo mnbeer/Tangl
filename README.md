@@ -1,10 +1,14 @@
-## What is a tangl?
-A tangl is a formal relationship between two otherwise unconnected things (classes, members, etc.). A tangl prevents run-time errors by keeping types in sync and managing [model pollution](https://github.com/mnbeer/Tangl/wiki/Model-Pollution#what-is-model-pollution). To see an example of the type of error a tangl can prevent, [go to this page in the wiki](https://github.com/mnbeer/Tangl/wiki/Preventing-Errors).
+## What is a tangl? 
+A tangl is a formal relationship between two otherwise unconnected things (classes, members, etc.). A tangl prevents run-time errors by keeping types in sync and managing [model pollution](https://github.com/mnbeer/Tangl/wiki/Model-Pollution#what-is-model-pollution). To see an example of the type of error a tangl can prevent, [go to this page in the wiki](wiki/Preventing-Errors#how-does-a-tangl-prevent-errors).
 
 The name is (very, very loosely) inspired by quantum entanglement where:
 
 > each particle of the pair or group cannot be described independently of the state of the others, including when the particles are separated by a large distance.
 > https://en.wikipedia.org/wiki/Quantum_entanglement
+
+* [What does this repository do?](#what-does-this-repository-do)
+* [Can I see an example](#can-i-see-an-example)
+
 
 ## What does this repository do?
 It allows C# developers to tangl class properties.
