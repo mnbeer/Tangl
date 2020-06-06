@@ -7,7 +7,7 @@ The name is (very, very loosely) inspired by quantum entanglement where:
 > https://en.wikipedia.org/wiki/Quantum_entanglement
 
 * [What does this repository do?](#what-does-this-repository-do)
-* [Can I see an example](#can-i-see-an-example)
+* [Can I see an example?](#can-i-see-an-example)
 * [Wouldn't it be great if this was baked into the C# language?](#wouldnt-it-be-great-if-this-was-baked-into-the-C#-language)
 * [Roadmap](#roadmap)
 * [Go to the wiki for more info](https://github.com/mnbeer/Tangl/wiki)
@@ -127,3 +127,6 @@ Possible future additions to this code-base include:
 * More robust fix provider
   * Update all tangls pointing to changed target
   * Detect/insert namespaces
+  
+Code contributions are welcome!!!
+
