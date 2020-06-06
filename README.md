@@ -8,6 +8,8 @@ The name is (very, very loosely) inspired by quantum entanglement where:
 
 * [What does this repository do?](#what-does-this-repository-do)
 * [Can I see an example](#can-i-see-an-example)
+* [Wouldn't it be great if this was baked into the C# language?](#wouldnt-it-be-great-if-this-was-baked-into-the-C#-language)
+* [Roadmap](#roadmap)
 * [Go to the wiki for more info](https://github.com/mnbeer/Tangl/wiki)
 
 ## What does this repository do?
@@ -114,3 +116,14 @@ namespace Example
 
 In the meantime, we settle for a tangl attribute.
 
+## RoadMap
+Possible future additions to this code-base include:
+* VB.NET support
+* Support for fields and methods
+* Overloads to include attributes in a tangl. For example, tangl a [MaxLength(50)] attribute. Syntax could look something like:
+```
+[Tangl(typeof(Example.Domain.Person), nameof(Person.PersonId), includeAttributes: true, exceptionList: "Required")]
+```
+* More robust fix provider
+  * Update all tangls pointing to changed target
+  * Detect/insert namespaces
