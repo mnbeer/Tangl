@@ -96,3 +96,21 @@ This is what Visual Studio looks like when it discovers a broken tangl.
 
 ![Fix Provider](https://github.com/mnbeer/tangl/wiki/images/tangl-fix.png)
 
+## Wouldn't it be great if this was baked into the C# language?
+Probably! Something like this would be pretty intuitive to C# developers:
+
+```c#
+namespace Example
+{
+    class PersonViewModel
+    {     
+        public int PersonId { get; set; } : Person.PersonId // <= NOT VALID C# BUT WE CAN DREAM
+        public Address HomeAddress { get; set; }
+        // other properties here
+    }
+}
+
+```
+
+In the meantime, we settle for a tangl attribute.
+
