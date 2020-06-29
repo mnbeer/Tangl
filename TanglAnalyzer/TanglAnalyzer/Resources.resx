@@ -138,6 +138,15 @@
   <data name="DifferingTypesTitle" xml:space="preserve">
     <value>Differing Tangl and Tangl target types</value>
   </data>
+  <data name="MissingAttributeDescription" xml:space="preserve">
+    <value>Missing attribute </value>
+  </data>
+  <data name="MissingAttributeMessageFormat" xml:space="preserve">
+    <value>Missing attribute '{0}'</value>
+  </data>
+  <data name="MissingAttributeTitle" xml:space="preserve">
+    <value>Missing attribute</value>
+  </data>
   <data name="MissingTargetDescription" xml:space="preserve">
     <value>Cannot find Tangl target.</value>
   </data>

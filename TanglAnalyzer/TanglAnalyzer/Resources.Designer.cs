@@ -8,10 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TanglAnalyzer
-{
+namespace TanglAnalyzer {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -41,7 +39,7 @@ namespace TanglAnalyzer
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TanglAnalyzer.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TanglAnalyzer.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -113,6 +111,33 @@ namespace TanglAnalyzer
         internal static string DifferingTypesTitle {
             get {
                 return ResourceManager.GetString("DifferingTypesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing attribute .
+        /// </summary>
+        internal static string MissingAttributeDescription {
+            get {
+                return ResourceManager.GetString("MissingAttributeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing attribute &apos;{0}&apos;.
+        /// </summary>
+        internal static string MissingAttributeMessageFormat {
+            get {
+                return ResourceManager.GetString("MissingAttributeMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing attribute.
+        /// </summary>
+        internal static string MissingAttributeTitle {
+            get {
+                return ResourceManager.GetString("MissingAttributeTitle", resourceCulture);
             }
         }
         

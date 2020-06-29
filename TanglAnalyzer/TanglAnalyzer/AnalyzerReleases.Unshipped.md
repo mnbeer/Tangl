@@ -5,5 +5,6 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 DifferingTanglTypes | Naming | Warning | TanglCodeAnalyzer
+MissingAttribute | Naming | Warning | TanglCodeAnalyzer
 MissingTanglTarget | Naming | Warning | TanglCodeAnalyzer
 MissingTanglTargetType | Naming | Warning | TanglCodeAnalyzer

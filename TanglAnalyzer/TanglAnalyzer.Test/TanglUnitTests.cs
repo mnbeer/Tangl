@@ -37,6 +37,10 @@ namespace Tangl.Test
     class Person
     {
         public int PersonId {get; set;}
+        public string FirstName {get; set;}
+        [MaxLength(50)]
+        [Required]
+        public string LastName {get; set;}
         public Person Spouse {get; set;}
         public DateTime? Birthday {get; set;}
     }    
@@ -102,7 +106,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 38, 21)
+                            new DiagnosticResultLocation("Test0.cs", 42, 21)
                         }
             };
 
@@ -130,7 +134,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 38, 21)
+                            new DiagnosticResultLocation("Test0.cs", 42, 21)
                         }
             };
 
@@ -159,7 +163,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 38, 21)
+                            new DiagnosticResultLocation("Test0.cs", 42, 21)
                         }
             };
 
@@ -190,7 +194,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 38, 25)
+                            new DiagnosticResultLocation("Test0.cs", 42, 25)
                         }
             };
 
@@ -220,7 +224,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 38, 24)
+                            new DiagnosticResultLocation("Test0.cs", 42, 24)
                         }
             };
 
@@ -244,6 +248,32 @@ namespace Tangl.Test
         //}";
         //        VerifyCSharpFix(test, fixtest);
 
+        [TestMethod]
+        public void TanglMissingAttributesTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"")]
+        [MaxLength(50)]
+        public string LastName { get; set; }
+    }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = TanglCodeAnalyzer.MissingAttributeId,
+                Message = String.Format("Missing attribute '{0}'",
+                "Required"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 43, 23)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+            //VerifyCSharpFix(test, test.Replace("public long PersonId", "public int PersonId"));
+        }
 
         //No diagnostics expected to show up
         [TestMethod]

@@ -37,6 +37,13 @@ namespace TanglAnalyzer
         private static readonly LocalizableString DifferingTypesMessageFormat = new LocalizableResourceString(nameof(Resources.DifferingTypesMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString DifferingTypesDescription = new LocalizableResourceString(nameof(Resources.DifferingTypesDescription), Resources.ResourceManager, typeof(Resources));
 
+        // Missing Attributes
+        public const string MissingAttributeId = "MissingAttribute";
+        private static readonly LocalizableString MissingAttributeTitle = new LocalizableResourceString(nameof(Resources.MissingAttributeTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MissingAttributeMessageFormat = new LocalizableResourceString(nameof(Resources.MissingAttributeMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MissingAttributeDescription = new LocalizableResourceString(nameof(Resources.MissingAttributeDescription), Resources.ResourceManager, typeof(Resources));
+
+
         private const string Category = "Naming";
 
         private static DiagnosticDescriptor MissingTargetTypeRule = new DiagnosticDescriptor(
@@ -66,8 +73,23 @@ namespace TanglAnalyzer
             isEnabledByDefault: true,
             description: DifferingTypesDescription);
 
+        private static DiagnosticDescriptor MissingAttributesRule = new DiagnosticDescriptor(
+            MissingAttributeId,
+            MissingAttributeTitle,
+            MissingAttributeMessageFormat,
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: MissingAttributeDescription);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get 
-            { return ImmutableArray.Create(MissingTargetTypeRule, MissingTargetRule, DifferingTypesRule); } }
+            { return ImmutableArray.Create(
+                MissingTargetTypeRule, 
+                MissingTargetRule, 
+                DifferingTypesRule,
+                MissingAttributesRule); 
+            } 
+        }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -122,6 +144,20 @@ namespace TanglAnalyzer
                     context.ReportDiagnostic(diagnostic);
                     return;
                 }
+
+                var propertyAttributes = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
+                var targetAttributes = target.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
+                var missingAttributes = targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name));
+                if (missingAttributes.Any())
+                {
+                    var attr = missingAttributes.First();
+                    var propertyBag = ImmutableDictionary<string, string>.Empty
+                                .Add("AttributeName", attr.ToString());
+                    var diagnostic = Diagnostic.Create(MissingAttributesRule, propertySymbol.Locations[0], propertyBag, attr.ToString());
+                    context.ReportDiagnostic(diagnostic);
+                    return;
+                }
+
             }
         }
 
