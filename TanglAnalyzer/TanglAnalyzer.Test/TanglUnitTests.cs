@@ -5,72 +5,41 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TestHelper;
 using TanglAnalyzer;
+using System.Reflection;
+using System.IO;
 
-namespace Tangl.Test
+namespace TanglAnalyzer.Test
 {
     [TestClass]
     public class UnitTest : CodeFixVerifier
     {
+        private static string testCore = "";
+        private static int testCodeLineNumber;
 
-        const string testCore = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
-    {
-
-    public class TanglAttribute : Attribute
-    {
-        private string _target;
-        private readonly bool _includeAttributes;
-        private readonly string _except;
-
-        public TanglAttribute(Type type, string propertyName, bool includeAttributes = true, string except = null)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
         {
-            _target = $""{type.FullName}.{propertyName}"";
-            _includeAttributes = includeAttributes;
-            _except = except;
+            Assembly assembly= Assembly.GetExecutingAssembly();
+            var resources = assembly.GetManifestResourceNames();
+            using (Stream rsrcStream = assembly.GetManifestResourceStream("TanglAnalyzer.Test.TestCode.txt"))
+            //using (Stream rsrcStream = assembly.GetManifestResourceStream(assembly.GetName().Name + ".Properties." + "TestCode.cs.txt"))
+            {
+                using (StreamReader sRdr = new StreamReader(rsrcStream))
+                {
+                    testCore = sRdr.ReadToEnd();
+                    testCodeLineNumber = testCore.Split('\n').Length - 3;
+                }
+            }
+
         }
 
-        public TanglAttribute(string target, bool includeAttributes = true, string except = null)
-        {
-            _target = target;
-            _includeAttributes = includeAttributes;
-            _except = except;
-        }
-
-        public string Target => _target;
-        public string Except => _except;
-        public bool IncludeAttributes => _includeAttributes;
-    }
-
-    class Person
-    {
-        public int PersonId {get; set;}
-        public string FirstName {get; set;}
-        [MaxLength(50)]
-        [Required]
-        public string LastName {get; set;}
-        public Person Spouse {get; set;}
-        public DateTime? Birthday {get; set;}
-    }    
-
-    class Contact : Person
-    {
-        public string Relationship {get; set;}
-    } 
-";
         /// <summary>
         /// Make sure a basic Tangl attribute has no diagnostics
         /// </summary>
         [TestMethod]
         public void TanglSimplePassingTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
@@ -78,7 +47,7 @@ namespace Tangl.Test
 
     }
     }";
-
+            test = InsertTestCode(test);
             VerifyCSharpDiagnostic(test);
         }
 
@@ -88,7 +57,7 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglSimpleStronglyTypesdPassingTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(typeof(Person), nameof(Person.PersonId))]
@@ -96,7 +65,7 @@ namespace Tangl.Test
 
     }
     }";
-
+            test = InsertTestCode(test);
             VerifyCSharpDiagnostic(test);
         }
 
@@ -106,7 +75,7 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglSimpleNullablePassingTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.Birthday"")]
@@ -114,7 +83,7 @@ namespace Tangl.Test
 
     }
     }";
-
+            test = InsertTestCode(test);
             VerifyCSharpDiagnostic(test);
         }
 
@@ -124,13 +93,14 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglMissingTargetTypeTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Persons.PersonId"")]
         public long PersonId { get; set; }
     }
     }";
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = "MissingTanglTargetType",
@@ -138,7 +108,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 56, 21)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber + 4, 21)
                         }
             };
 
@@ -151,7 +121,7 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglMissingTargetTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.Id"")]
@@ -159,6 +129,7 @@ namespace Tangl.Test
 
     }
     }";
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = "MissingTanglTarget",
@@ -166,7 +137,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 56, 21)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber + 4, 21)
                         }
             };
 
@@ -179,13 +150,14 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglDifferingValueTypesTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
         public long PersonId { get; set; }
     }
     }";
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = "DifferingTanglTypes",
@@ -195,7 +167,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 56, 21)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber + 4, 21)
                         }
             };
 
@@ -209,14 +181,14 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglDifferingNullableTypesTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.Birthday"")]
         public DateTime Birthday { get; set; }
     }
     }";
-            
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = "DifferingTanglTypes",
@@ -226,7 +198,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 56, 25)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber + 4, 25)
                         }
             };
 
@@ -240,13 +212,14 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglDifferingReferenceTypesTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.Spouse"")]
         public Contact Partner { get; set; }
     }
     }";
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = "DifferingTanglTypes",
@@ -256,7 +229,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 56, 24)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber + 4, 24)
                         }
             };
 
@@ -283,7 +256,7 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglMissingAttributesTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.LastName"")]
@@ -291,6 +264,7 @@ namespace Tangl.Test
         public string LastName { get; set; }
     }
     }";
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = TanglCodeAnalyzer.MissingAttributeId,
@@ -299,7 +273,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 57, 23)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber+ 5, 23)
                         }
             };
 
@@ -310,7 +284,7 @@ namespace Tangl.Test
         [TestMethod]
         public void TanglMissingAttributeExceptionTest()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.LastName"", except: ""Required"")]
@@ -318,14 +292,14 @@ namespace Tangl.Test
         public string LastName { get; set; }
     }
     }";
-
+            test = InsertTestCode(test);
             VerifyCSharpDiagnostic(test);
         }
 
         [TestMethod]
         public void TanglMissingAttributeExceptionTest2()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.LastName"", includeAttributes: true; except: ""Required"")]
@@ -333,14 +307,14 @@ namespace Tangl.Test
         public string LastName { get; set; }
     }
     }";
-
+            test = InsertTestCode(test);
             VerifyCSharpDiagnostic(test);
         }
 
         [TestMethod]
         public void TanglMissingAttributeExceptionTest3()
         {
-            var test = testCore + @"
+            var test = @"
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.LastName"", includeAttributes: false; except: ""Required"")]
@@ -348,7 +322,7 @@ namespace Tangl.Test
         public string LastName { get; set; }
     }
     }";
-
+            test = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = TanglCodeAnalyzer.MissingAttributeId,
@@ -356,7 +330,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
         new[] {
-                            new DiagnosticResultLocation("Test0.cs", 57, 23)
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber+ 5, 23)
             }
             };
 
@@ -429,6 +403,11 @@ namespace Tangl.Test
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
             return new TanglCodeAnalyzer();
+        }
+
+        private string InsertTestCode(string testCode)
+        {
+            return testCore.Replace("//{0}", testCode);
         }
     }
 }

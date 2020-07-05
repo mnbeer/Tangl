@@ -1,0 +1,56 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.ComponentModel.DataAnnotations;
+
+namespace ConsoleApplication1
+{
+
+    public class TanglAttribute : Attribute
+    {
+        private string _target;
+        private readonly bool _includeAttributes;
+        private readonly string _except;
+
+        public TanglAttribute(Type type, string propertyName, bool includeAttributes = true, string except = null)
+        {
+            _target = $""{ type.FullName}.{ propertyName}
+            "";
+            _includeAttributes = includeAttributes;
+            _except = except;
+        }
+
+        public TanglAttribute(string target, bool includeAttributes = true, string except = null)
+        {
+            _target = target;
+            _includeAttributes = includeAttributes;
+            _except = except;
+        }
+
+        public string Target => _target;
+        public string Except => _except;
+        public bool IncludeAttributes => _includeAttributes;
+    }
+
+    class Person
+    {
+        public int PersonId { get; set; }
+        public string FirstName { get; set; }
+        [MaxLength(50)]
+        [Required]
+        public string LastName { get; set; }
+        public Person Spouse { get; set; }
+        public DateTime? Birthday { get; set; }
+    }
+
+    class Contact : Person
+    {
+        public string Relationship { get; set; }
+    }
+
+    //{0}
+
+}
