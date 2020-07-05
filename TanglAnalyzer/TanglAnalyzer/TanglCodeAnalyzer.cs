@@ -109,12 +109,41 @@ namespace TanglAnalyzer
                 var arg1 = tangl.ConstructorArguments.First();
                 var arg2 = tangl.ConstructorArguments.Skip(1).FirstOrDefault();
                 // The first argument has to be the name of the property this is entangled with
-                var targetName = tangl.ConstructorArguments.Count() == 1 
-                    ? $"{arg1.Value}"
-                    : $"{arg1.Value}.{arg2.Value}";
+
+                var stronglyTyped = arg1.Value.GetType().Name.ToLower() != "string";
+                //if (stronglyTyped)
+                //{
+                //    // Using constructor TanglAttribute(Type type, string propertyName, bool includeAttributes = true, string except = null)
+                //}
+                //else
+                //{
+                //    // Using constructor TanglAttribute(string target, bool includeAttributes = true, string except = null)
+                //}
+                var targetName = stronglyTyped ? $"{arg1.Value}.{arg2.Value}" : $"{arg1.Value}";
                 if (string.IsNullOrWhiteSpace(targetName)) {
                     continue;
                 }
+
+                var includeAttributes = true;
+                for (var ii = 1; ii < tangl.ConstructorArguments.Length; ii++)
+                {
+                    var arg = tangl.ConstructorArguments[ii];
+                    if (arg.Value?.GetType().Name?.ToLower() == "boolean")
+                    {
+                        includeAttributes = (bool)arg.Value;
+                    }
+                }
+
+                var except = "";
+                for (var ii = 1 + (stronglyTyped ? 1 : 0); ii < tangl.ConstructorArguments.Length; ii++)
+                {
+                    var arg = tangl.ConstructorArguments[ii];
+                    if (arg.Value?.GetType().Name?.ToLower() == "string")
+                    {
+                        except = (string)arg.Value;
+                    }
+                }
+
                 var pos = targetName.LastIndexOf('.');
                 var typeName = targetName.Substring(0, pos);
                 var propertyName = targetName.Substring(pos + 1, targetName.Length - pos - 1);
@@ -145,18 +174,25 @@ namespace TanglAnalyzer
                     return;
                 }
 
-                var propertyAttributes = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
-                var targetAttributes = target.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
-                var missingAttributes = targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name));
-                if (missingAttributes.Any())
-                {
-                    var attr = missingAttributes.First();
-                    var propertyBag = ImmutableDictionary<string, string>.Empty
-                                .Add("AttributeName", attr.ToString());
-                    var diagnostic = Diagnostic.Create(MissingAttributesRule, propertySymbol.Locations[0], propertyBag, attr.ToString());
-                    context.ReportDiagnostic(diagnostic);
-                    return;
+                // Determine if tangl is missing attributes specified in the target
+                var exceptions = except.Split(',').Where(s => !string.IsNullOrWhiteSpace(s));
+                if (includeAttributes || exceptions.Any()) {
+                    var propertyAttributes = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
+                    var targetAttributes = target.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
+                    var missingAttributes = includeAttributes
+                        ? targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name) && !exceptions.Contains(t.AttributeClass.Name))
+                        : targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name) && exceptions.Contains(t.AttributeClass.Name));
+                    if (missingAttributes.Any())
+                    {
+                        var attr = missingAttributes.First();
+                        var propertyBag = ImmutableDictionary<string, string>.Empty
+                                    .Add("AttributeName", attr.ToString());
+                        var diagnostic = Diagnostic.Create(MissingAttributesRule, propertySymbol.Locations[0], propertyBag, attr.ToString());
+                        context.ReportDiagnostic(diagnostic);
+                        return;
+                    }
                 }
+
 
             }
         }

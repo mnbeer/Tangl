@@ -23,5 +23,7 @@ namespace Tangl
         }
 
         public string Target => _target;
+        public string Except => _except;
+        public bool IncludeAttributes => _includeAttributes;
     }
 }

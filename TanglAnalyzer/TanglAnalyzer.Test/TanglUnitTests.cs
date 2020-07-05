@@ -26,12 +26,26 @@ namespace Tangl.Test
     public class TanglAttribute : Attribute
     {
         private string _target;
-        public TanglAttribute(string target)
+        private readonly bool _includeAttributes;
+        private readonly string _except;
+
+        public TanglAttribute(Type type, string propertyName, bool includeAttributes = true, string except = null)
+        {
+            _target = $""{type.FullName}.{propertyName}"";
+            _includeAttributes = includeAttributes;
+            _except = except;
+        }
+
+        public TanglAttribute(string target, bool includeAttributes = true, string except = null)
         {
             _target = target;
+            _includeAttributes = includeAttributes;
+            _except = except;
         }
 
         public string Target => _target;
+        public string Except => _except;
+        public bool IncludeAttributes => _includeAttributes;
     }
 
     class Person
@@ -60,6 +74,24 @@ namespace Tangl.Test
         class TTest
         {   
         [Tangl(target: ""ConsoleApplication1.Person.PersonId"")]
+        public int PersonId { get; set; }
+
+    }
+    }";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+        /// <summary>
+        /// Make sure a basic Tangl attribute has no diagnostics
+        /// </summary>
+        [TestMethod]
+        public void TanglSimpleStronglyTypesdPassingTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(typeof(Person), nameof(Person.PersonId))]
         public int PersonId { get; set; }
 
     }
@@ -106,7 +138,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 42, 21)
+                            new DiagnosticResultLocation("Test0.cs", 56, 21)
                         }
             };
 
@@ -134,7 +166,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 42, 21)
+                            new DiagnosticResultLocation("Test0.cs", 56, 21)
                         }
             };
 
@@ -163,7 +195,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 42, 21)
+                            new DiagnosticResultLocation("Test0.cs", 56, 21)
                         }
             };
 
@@ -194,7 +226,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 42, 25)
+                            new DiagnosticResultLocation("Test0.cs", 56, 25)
                         }
             };
 
@@ -224,7 +256,7 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 42, 24)
+                            new DiagnosticResultLocation("Test0.cs", 56, 24)
                         }
             };
 
@@ -267,12 +299,68 @@ namespace Tangl.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 43, 23)
+                            new DiagnosticResultLocation("Test0.cs", 57, 23)
                         }
             };
 
             VerifyCSharpDiagnostic(test, expected);
             //VerifyCSharpFix(test, test.Replace("public long PersonId", "public int PersonId"));
+        }
+
+        [TestMethod]
+        public void TanglMissingAttributeExceptionTest()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"", except: ""Required"")]
+        [MaxLength(50)]
+        public string LastName { get; set; }
+    }
+    }";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [TestMethod]
+        public void TanglMissingAttributeExceptionTest2()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"", includeAttributes: true; except: ""Required"")]
+        [MaxLength(50)]
+        public string LastName { get; set; }
+    }
+    }";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [TestMethod]
+        public void TanglMissingAttributeExceptionTest3()
+        {
+            var test = testCore + @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"", includeAttributes: false; except: ""Required"")]
+        [MaxLength(50)]
+        public string LastName { get; set; }
+    }
+    }";
+
+            var expected = new DiagnosticResult
+            {
+                Id = TanglCodeAnalyzer.MissingAttributeId,
+                Message = String.Format("Missing attribute '{0}'", "Required"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+        new[] {
+                            new DiagnosticResultLocation("Test0.cs", 57, 23)
+            }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
         }
 
         //No diagnostics expected to show up
