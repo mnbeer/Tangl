@@ -88,6 +88,33 @@ namespace TanglAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Differing attribute.
+        /// </summary>
+        internal static string DifferingAttributeDescription {
+            get {
+                return ResourceManager.GetString("DifferingAttributeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Differing attribute &apos;{0}&apos;.
+        /// </summary>
+        internal static string DifferingAttributeMessageFormat {
+            get {
+                return ResourceManager.GetString("DifferingAttributeMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Differing attribute.
+        /// </summary>
+        internal static string DifferingAttributeTitle {
+            get {
+                return ResourceManager.GetString("DifferingAttributeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tangl and Tangl target have differing types..
         /// </summary>
         internal static string DifferingTypesDescription {

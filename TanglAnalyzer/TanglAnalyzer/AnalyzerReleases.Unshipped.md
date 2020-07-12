@@ -4,6 +4,7 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+DifferingAttribute | Naming | Warning | TanglCodeAnalyzer
 DifferingTanglTypes | Naming | Warning | TanglCodeAnalyzer
 MissingAttribute | Naming | Warning | TanglCodeAnalyzer
 MissingTanglTarget | Naming | Warning | TanglCodeAnalyzer

@@ -129,6 +129,15 @@
     <value>Type name contains lowercase letters</value>
     <comment>The title of the diagnostic.</comment>
   </data>
+  <data name="DifferingAttributeDescription" xml:space="preserve">
+    <value>Differing attribute</value>
+  </data>
+  <data name="DifferingAttributeMessageFormat" xml:space="preserve">
+    <value>Differing attribute '{0}'</value>
+  </data>
+  <data name="DifferingAttributeTitle" xml:space="preserve">
+    <value>Differing attribute</value>
+  </data>
   <data name="DifferingTypesDescription" xml:space="preserve">
     <value>Tangl and Tangl target have differing types.</value>
   </data>

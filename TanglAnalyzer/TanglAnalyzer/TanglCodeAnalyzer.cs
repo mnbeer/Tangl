@@ -43,6 +43,11 @@ namespace TanglAnalyzer
         private static readonly LocalizableString MissingAttributeMessageFormat = new LocalizableResourceString(nameof(Resources.MissingAttributeMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MissingAttributeDescription = new LocalizableResourceString(nameof(Resources.MissingAttributeDescription), Resources.ResourceManager, typeof(Resources));
 
+        // Differing Attributes
+        public const string DifferingAttributeId = "DifferingAttribute";
+        private static readonly LocalizableString DifferingAttributeTitle = new LocalizableResourceString(nameof(Resources.DifferingAttributeTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString DifferingAttributeMessageFormat = new LocalizableResourceString(nameof(Resources.DifferingAttributeMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString DifferingAttributeDescription = new LocalizableResourceString(nameof(Resources.DifferingAttributeDescription), Resources.ResourceManager, typeof(Resources));
 
         private const string Category = "Naming";
 
@@ -82,12 +87,22 @@ namespace TanglAnalyzer
             isEnabledByDefault: true,
             description: MissingAttributeDescription);
 
+        private static DiagnosticDescriptor DifferingAttributesRule = new DiagnosticDescriptor(
+            DifferingAttributeId,
+            DifferingAttributeTitle,
+            DifferingAttributeMessageFormat,
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: DifferingAttributeDescription);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get 
             { return ImmutableArray.Create(
                 MissingTargetTypeRule, 
                 MissingTargetRule, 
                 DifferingTypesRule,
-                MissingAttributesRule); 
+                MissingAttributesRule,
+                DifferingAttributesRule); 
             } 
         }
 
@@ -174,11 +189,13 @@ namespace TanglAnalyzer
                     return;
                 }
 
-                // Determine if tangl is missing attributes specified in the target
+                
                 var exceptions = except.Split(',').Where(s => !string.IsNullOrWhiteSpace(s));
                 if (includeAttributes || exceptions.Any()) {
                     var propertyAttributes = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
                     var targetAttributes = target.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
+
+                    // Determine if tangl is missing attributes specified in the target
                     var missingAttributes = includeAttributes
                         ? targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name) && !exceptions.Contains(t.AttributeClass.Name))
                         : targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name) && exceptions.Contains(t.AttributeClass.Name));
@@ -190,6 +207,29 @@ namespace TanglAnalyzer
                         var diagnostic = Diagnostic.Create(MissingAttributesRule, propertySymbol.Locations[0], propertyBag, attr.ToString());
                         context.ReportDiagnostic(diagnostic);
                         return;
+                    }
+
+                    //// Determine if tangl is has differing arguments
+                    var foundAttributes = includeAttributes
+                        ? targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass.Name == t.AttributeClass.Name) && !exceptions.Contains(t.AttributeClass.Name))
+                        : targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass.Name == t.AttributeClass.Name) && exceptions.Contains(t.AttributeClass.Name));
+                    foreach (var targetAttribute in foundAttributes)
+                    {
+                        var propertyAttribute = propertyAttributes.Single(pa => pa.AttributeClass.Name == targetAttribute.AttributeClass.Name);
+                        var targetAttributeText = targetAttribute.ApplicationSyntaxReference.SyntaxTree.ToString().
+                            Substring(targetAttribute.ApplicationSyntaxReference.Span.Start - 1, targetAttribute.ApplicationSyntaxReference.Span.Length + 2);
+                        var propertyAttributeText = propertyAttribute.ApplicationSyntaxReference.SyntaxTree.ToString().
+                            Substring(propertyAttribute.ApplicationSyntaxReference.Span.Start - 1, propertyAttribute.ApplicationSyntaxReference.Span.Length + 2);
+                        if (targetAttributeText != propertyAttributeText)
+                        {
+                            var propertyBag = ImmutableDictionary<string, string>.Empty
+                                    .Add("AttributeToReplace", propertyAttributeText)
+                                    .Add("AttributeReplacement", targetAttributeText);
+                            var diagnostic = Diagnostic.Create(DifferingAttributesRule, propertySymbol.Locations[0], propertyBag, targetAttribute.ToString());
+                            context.ReportDiagnostic(diagnostic);
+                            return;
+                        }
+
                     }
                 }
 

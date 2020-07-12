@@ -337,6 +337,35 @@ namespace TanglAnalyzer.Test
             VerifyCSharpDiagnostic(test, expected);
         }
 
+        [TestMethod]
+        public void TanglDifferingAttributesTest()
+        {
+            var test = @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"")]
+        [MaxLength(100)]
+        [Required]
+        public string LastName { get; set; }
+    }
+    }";
+            test = InsertTestCode(test);
+            var expected = new DiagnosticResult
+            {
+                Id = TanglCodeAnalyzer.DifferingAttributeId,
+                Message = String.Format("Differing attribute '{0}'",
+                "MaxLength"),
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", testCodeLineNumber + 6, 23)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+            //VerifyCSharpFix(test, test.Replace("public long PersonId", "public int PersonId"));
+        }
+
         //No diagnostics expected to show up
         [TestMethod]
         public void NoCodeTest
