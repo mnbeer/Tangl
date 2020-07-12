@@ -202,8 +202,9 @@ namespace TanglAnalyzer
                     if (missingAttributes.Any())
                     {
                         var attr = missingAttributes.First();
-                        var propertyBag = ImmutableDictionary<string, string>.Empty
-                                    .Add("AttributeName", attr.ToString());
+                        var targetAttributeText = attr.ApplicationSyntaxReference.SyntaxTree.ToString().
+                                    Substring(attr.ApplicationSyntaxReference.Span.Start - 1, attr.ApplicationSyntaxReference.Span.Length + 2);
+                        var propertyBag = ImmutableDictionary<string, string>.Empty.Add("AttributeToInsert", targetAttributeText);
                         var diagnostic = Diagnostic.Create(MissingAttributesRule, propertySymbol.Locations[0], propertyBag, attr.ToString());
                         context.ReportDiagnostic(diagnostic);
                         return;

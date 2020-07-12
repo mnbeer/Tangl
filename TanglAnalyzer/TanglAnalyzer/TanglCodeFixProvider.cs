@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
+using System.Data;
 
 namespace TanglAnalyzer
 {
@@ -43,8 +44,16 @@ namespace TanglAnalyzer
             //var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().First();
 
-            if (diagnostic.Id == TanglCodeAnalyzer.DifferingAttributeId)
+            if (diagnostic.Id == TanglCodeAnalyzer.MissingAttributeId)
             {
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: title,
+                        createChangedDocument: c => InsertAttribute(diagnostic, context.Document, declaration, c),
+                        equivalenceKey: title),
+                    diagnostic);
+            }
+            else if (diagnostic.Id == TanglCodeAnalyzer.DifferingAttributeId) {
                 context.RegisterCodeFix(
                     CodeAction.Create(
                         title: title,
@@ -108,6 +117,27 @@ namespace TanglAnalyzer
             //return document.WithText(sourceText.WithChanges(new TextChange(identifierToken.FullSpan, newToken.ToFullString())));
         }
 
+        private async Task<Document> InsertAttribute(Diagnostic diagnostic, Document document, PropertyDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
+            var attributeToInsert = diagnostic.Properties["AttributeToInsert"];
+
+            var currentText = typeDecl.AttributeLists.ToFullString();
+            var newText = $"{currentText}{attributeToInsert}{Environment.NewLine}";
+
+
+    //        var attributes = methodDeclaration.AttributeLists.Add(
+    //SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(
+    //    SyntaxFactory.Attribute(SyntaxFactory.Literal(attributeToInsert))
+    ////  .WithArgumentList(...)
+    //)).NormalizeWhitespace());
+
+
+            //// update document by changing the source text
+            var sourceText = await typeDecl.SyntaxTree.GetTextAsync(cancellationToken);
+            var doc =  document.WithText(sourceText.WithChanges(new TextChange(typeDecl.AttributeLists.FullSpan, newText)));
+            return doc;
+        }
+
         private async Task<Document> UpdateAttribute(Diagnostic diagnostic, Document document, PropertyDeclarationSyntax typeDecl, CancellationToken cancellationToken)
         {
             var attributeToReplace = diagnostic.Properties["AttributeToReplace"];
@@ -118,6 +148,11 @@ namespace TanglAnalyzer
 
             //// update document by changing the source text
             var sourceText = await typeDecl.SyntaxTree.GetTextAsync(cancellationToken);
+            var tc = new TextChange(typeDecl.FullSpan, newText);
+            var st = sourceText.WithChanges(tc);
+            var doc = document.WithText(st);
+            var text = await doc.GetTextAsync();
+
             return document.WithText(sourceText.WithChanges(new TextChange(typeDecl.FullSpan, newText)));
         }
     }

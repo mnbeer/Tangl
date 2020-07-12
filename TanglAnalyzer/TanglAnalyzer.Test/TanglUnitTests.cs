@@ -322,7 +322,18 @@ namespace TanglAnalyzer.Test
         public string LastName { get; set; }
     }
     }";
-            test = InsertTestCode(test);
+
+            var expectedText = @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"", includeAttributes: false; except: ""Required"")]
+        [MaxLength(50)]
+[Required]
+        public string LastName { get; set; }
+    }
+    }";
+
+            var testSource = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = TanglCodeAnalyzer.MissingAttributeId,
@@ -334,7 +345,8 @@ namespace TanglAnalyzer.Test
             }
             };
 
-            VerifyCSharpDiagnostic(test, expected);
+            VerifyCSharpDiagnostic(testSource, expected);
+            VerifyCSharpFix(testSource, testSource.Replace(test, expectedText));
         }
 
         [TestMethod]
@@ -347,9 +359,30 @@ namespace TanglAnalyzer.Test
         [MaxLength(100)]
         [Required]
         public string LastName { get; set; }
+
+        [MaxLength(100)]
+        [Required]
+        public string FirstName { get; set; }
+
     }
     }";
-            test = InsertTestCode(test);
+
+            var expectedText = @"
+        class TTest
+        {   
+        [Tangl(target: ""ConsoleApplication1.Person.LastName"")]
+        [MaxLength(50)]
+        [Required]
+        public string LastName { get; set; }
+
+        [MaxLength(100)]
+        [Required]
+        public string FirstName { get; set; }
+
+    }
+    }";
+
+            var testSource = InsertTestCode(test);
             var expected = new DiagnosticResult
             {
                 Id = TanglCodeAnalyzer.DifferingAttributeId,
@@ -362,8 +395,8 @@ namespace TanglAnalyzer.Test
                         }
             };
 
-            VerifyCSharpDiagnostic(test, expected);
-            VerifyCSharpFix(test, test.Replace("[MaxLength(100)]", "[MaxLength(50)]"));
+            VerifyCSharpDiagnostic(testSource, expected);
+            VerifyCSharpFix(testSource, testSource.Replace(test, expectedText));
         }
 
         //No diagnostics expected to show up
