@@ -209,7 +209,7 @@ namespace TanglAnalyzer
                         return;
                     }
 
-                    //// Determine if tangl is has differing arguments
+                    //// Determine if tangl has differing arguments
                     var foundAttributes = includeAttributes
                         ? targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass.Name == t.AttributeClass.Name) && !exceptions.Contains(t.AttributeClass.Name))
                         : targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass.Name == t.AttributeClass.Name) && exceptions.Contains(t.AttributeClass.Name));

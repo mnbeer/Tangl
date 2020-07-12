@@ -43,13 +43,25 @@ namespace TanglAnalyzer
             //var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().First();
 
-            // Register a code action that will invoke the fix.
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: title,
-                    createChangedDocument: c => UpdateType(diagnostic, context.Document, declaration, c),
-                    equivalenceKey: title),
-                diagnostic);
+            if (diagnostic.Id == TanglCodeAnalyzer.DifferingAttributeId)
+            {
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: title,
+                        createChangedDocument: c => UpdateAttribute(diagnostic, context.Document, declaration, c),
+                        equivalenceKey: title),
+                    diagnostic);
+            }
+            else
+            {
+                // Register a code action that will invoke the fix.
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: title,
+                        createChangedDocument: c => UpdateType(diagnostic, context.Document, declaration, c),
+                        equivalenceKey: title),
+                    diagnostic);
+            }
         }
 
         private async Task<Document> UpdateType(Diagnostic diagnostic, Document document, PropertyDeclarationSyntax typeDecl, CancellationToken cancellationToken)
@@ -94,6 +106,19 @@ namespace TanglAnalyzer
             //var sourceText = await typeDecl.SyntaxTree.GetTextAsync(cancellationToken);
             //// update document by changing the source text
             //return document.WithText(sourceText.WithChanges(new TextChange(identifierToken.FullSpan, newToken.ToFullString())));
+        }
+
+        private async Task<Document> UpdateAttribute(Diagnostic diagnostic, Document document, PropertyDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
+            var attributeToReplace = diagnostic.Properties["AttributeToReplace"];
+            var attributeReplacement = diagnostic.Properties["AttributeReplacement"];
+
+            var currentText = typeDecl.ToFullString();
+            var newText = currentText.Replace(attributeToReplace, attributeReplacement);
+
+            //// update document by changing the source text
+            var sourceText = await typeDecl.SyntaxTree.GetTextAsync(cancellationToken);
+            return document.WithText(sourceText.WithChanges(new TextChange(typeDecl.FullSpan, newText)));
         }
     }
 

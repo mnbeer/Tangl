@@ -363,7 +363,7 @@ namespace TanglAnalyzer.Test
             };
 
             VerifyCSharpDiagnostic(test, expected);
-            //VerifyCSharpFix(test, test.Replace("public long PersonId", "public int PersonId"));
+            VerifyCSharpFix(test, test.Replace("[MaxLength(100)]", "[MaxLength(50)]"));
         }
 
         //No diagnostics expected to show up
