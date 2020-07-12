@@ -19,11 +19,12 @@ namespace TanglAnalyzer
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(TanglCodeFixProvider)), Shared]
     public class TanglCodeFixProvider : CodeFixProvider
     {
-        private const string title = "Change type to match target";
-
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(TanglCodeAnalyzer.DifferingTypesId); }
+            get { return ImmutableArray.Create(
+                TanglCodeAnalyzer.DifferingTypesId,
+                TanglCodeAnalyzer.MissingAttributeId,
+                TanglCodeAnalyzer.DifferingAttributeId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -44,31 +45,34 @@ namespace TanglAnalyzer
             //var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().First();
 
+            // Register a code actions that will invoke the fix.
             if (diagnostic.Id == TanglCodeAnalyzer.MissingAttributeId)
             {
+                const string insertAttributeTitle = "Insert attribute to match target";
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        title: title,
+                        title: insertAttributeTitle,
                         createChangedDocument: c => InsertAttribute(diagnostic, context.Document, declaration, c),
-                        equivalenceKey: title),
+                        equivalenceKey: insertAttributeTitle),
                     diagnostic);
             }
             else if (diagnostic.Id == TanglCodeAnalyzer.DifferingAttributeId) {
+                const string updateAttributeTitle = "Update attribute to match target";
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        title: title,
+                        title: updateAttributeTitle,
                         createChangedDocument: c => UpdateAttribute(diagnostic, context.Document, declaration, c),
-                        equivalenceKey: title),
+                        equivalenceKey: updateAttributeTitle),
                     diagnostic);
             }
             else
             {
-                // Register a code action that will invoke the fix.
+                const string changeTypeTitle = "Change type to match target";
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        title: title,
+                        title: changeTypeTitle,
                         createChangedDocument: c => UpdateType(diagnostic, context.Document, declaration, c),
-                        equivalenceKey: title),
+                        equivalenceKey: changeTypeTitle),
                     diagnostic);
             }
         }
