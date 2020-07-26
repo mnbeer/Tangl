@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <PackageId>TanglAnalyzer</PackageId>
-    <PackageVersion>1.0.1-beta</PackageVersion>
+    <PackageVersion>1.1.0.0</PackageVersion>
     <Authors>Matthew Nicholson Beer</Authors>
     <PackageProjectUrl>https://github.com/mnbeer/Tangl</PackageProjectUrl>
     <PackageIconUrl></PackageIconUrl>
@@ -16,7 +16,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Tangl code and analyzer and fix provider to ensure valid tangls. See project url for definition and explanation of tangls.</Description>
-    <PackageReleaseNotes>Beta version</PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <Copyright>Copyright 2020 Matthew Nicholson Beer</Copyright>
     <PackageTags>tangl, TanglAnalyzer, analyzers</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -25,7 +25,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.6.0" PrivateAssets="all" />
-    <PackageReference Include="tangl" Version="1.0.0-beta" />
+    <PackageReference Include="Tangl" Version="1.0.0" />
     <PackageReference Update="NETStandard.Library" PrivateAssets="all" />
   </ItemGroup>
 

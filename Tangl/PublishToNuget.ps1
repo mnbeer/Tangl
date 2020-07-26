@@ -1,3 +1,3 @@
-﻿dotnet build --configuration Release
-nuget pack -Properties Configuration=Release -OutputDirectory "bin\Release"
-nuget init bin\Release C:\NuGetPackages
+﻿$apiKey=$args[0]
+dotnet pack --Configuration Release
+dotnet nuget push bin\MCD\release\Tangl.1.1.0.nupkg -k $apiKey -s https://api.nuget.org/v3/index.json

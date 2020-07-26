@@ -6,15 +6,15 @@
 
   <PropertyGroup>
     <PackageId>Tangl</PackageId>
-    <PackageVersion>1.0.0-beta</PackageVersion>
+    <PackageVersion>1.1.0</PackageVersion>
     <Authors>Matthew Nicholson Beer</Authors>
     <PackageProjectUrl>https://github.com/mnbeer/Tangl</PackageProjectUrl>
     <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/mnbeer/Tangl</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>TanglAttribute class to define tangls. See project url for definition and explanation of tangls.</Description>
-    <PackageReleaseNotes>Beta version</PackageReleaseNotes>
+    <Description>TanglAttribute class to define tangls. See project url for definition and explanation of tangls. Does not include code analyzer and fixer. That is in sibling package TanglAnalzyer.</Description>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <Copyright>Copyright 2020 Matthew Nicholson Beer</Copyright>
     <PackageTags>tangl, TanglAnalyzer, analyzers</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
