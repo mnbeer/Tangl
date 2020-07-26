@@ -7,6 +7,7 @@ The name is (very, very loosely) inspired by quantum entanglement where:
 > https://en.wikipedia.org/wiki/Quantum_entanglement
 
 * [What does this repository do?](#what-does-this-repository-do)
+* [How to install?](#how-to-install)
 * [Can I see an example?](#can-i-see-an-example)
 * [What about attributes?](#what-about-attributes)
 * [Wouldn't it be great if this was baked into the C# language?](#wouldnt-it-be-great-if-this-was-baked-into-the-C#-language)
@@ -15,6 +16,22 @@ The name is (very, very loosely) inspired by quantum entanglement where:
 
 ## What does this repository do?
 It allows C# developers to tangl class properties.
+
+## How to install?
+
+Tangl is available at nuget.org
+
+For the Tangl attribute, code analyzer and fix provider: [https://www.nuget.org/packages/TanglAnalyzer](https://www.nuget.org/packages/TanglAnalyzer)
+
+```
+PM> Install-Package TanglAnalyzer
+```
+
+For just the Tangl attribute: [https://www.nuget.org/packages/Tangl](https://www.nuget.org/packages/Tangl)
+
+```
+PM> Install-Package Tangl
+```
 
 ## Can I see an example?
 
