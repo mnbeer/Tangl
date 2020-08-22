@@ -221,9 +221,6 @@ In the meantime, we settle for a tangl attribute.
 Possible future additions to this code-base include:
 * VB.NET support
 * Support for fields and methods
-```
-[Tangl(typeof(Example.Domain.Person), nameof(Person.PersonId), includeAttributes: true, exceptionList: "Required")]
-```
 * More robust fix provider
   * Update all tangls pointing to changed target
   * Detect/insert namespaces
