@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace TanglAnalyzer
@@ -15,9 +10,9 @@ namespace TanglAnalyzer
     {
         // You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
         // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Localizing%20Analyzers.md for more on localization
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
+        //private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
+        //private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
+        //private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
 
         // Missing Target Type
         public const string MissingTargetTypeId = "MissingTanglTargetType";
@@ -54,10 +49,10 @@ namespace TanglAnalyzer
         private static DiagnosticDescriptor MissingTargetTypeRule = new DiagnosticDescriptor(
             MissingTargetTypeId,
             MissingTargetTypeTitle,
-            MissingTargetTypeMessageFormat, 
+            MissingTargetTypeMessageFormat,
             Category,
-            DiagnosticSeverity.Warning, 
-            isEnabledByDefault: true, 
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
             description: MissingTargetTypeDescription);
 
         private static DiagnosticDescriptor MissingTargetRule = new DiagnosticDescriptor(
@@ -96,15 +91,13 @@ namespace TanglAnalyzer
             isEnabledByDefault: true,
             description: DifferingAttributeDescription);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get 
-            { return ImmutableArray.Create(
-                MissingTargetTypeRule, 
-                MissingTargetRule, 
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+            ImmutableArray.Create(
+                MissingTargetTypeRule,
+                MissingTargetRule,
                 DifferingTypesRule,
                 MissingAttributesRule,
-                DifferingAttributesRule); 
-            } 
-        }
+                DifferingAttributesRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -117,7 +110,7 @@ namespace TanglAnalyzer
         {
             var propertySymbol = (IPropertySymbol)context.Symbol;
             // Find TanglAttribute associated with property
-            var tangls = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name == "TanglAttribute");
+            var tangls = propertySymbol.GetAttributes().Where(a => a.AttributeClass?.Name == "TanglAttribute");
             // Pull all arguments from the attribute constructor
             foreach (var tangl in tangls.Where(t => t.ConstructorArguments.Any()))
             {
@@ -125,7 +118,7 @@ namespace TanglAnalyzer
                 var arg2 = tangl.ConstructorArguments.Skip(1).FirstOrDefault();
                 // The first argument has to be the name of the property this is entangled with
 
-                var stronglyTyped = arg1.Value.GetType().Name.ToLower() != "string";
+                var stronglyTyped = arg1.Value?.GetType().Name.ToLower() != "string";
                 //if (stronglyTyped)
                 //{
                 //    // Using constructor TanglAttribute(Type type, string propertyName, bool includeAttributes = true, string except = null)
@@ -135,7 +128,8 @@ namespace TanglAnalyzer
                 //    // Using constructor TanglAttribute(string target, bool includeAttributes = true, string except = null)
                 //}
                 var targetName = stronglyTyped ? $"{arg1.Value}.{arg2.Value}" : $"{arg1.Value}";
-                if (string.IsNullOrWhiteSpace(targetName)) {
+                if (string.IsNullOrWhiteSpace(targetName))
+                {
                     continue;
                 }
 
@@ -143,7 +137,7 @@ namespace TanglAnalyzer
                 for (var ii = 1; ii < tangl.ConstructorArguments.Length; ii++)
                 {
                     var arg = tangl.ConstructorArguments[ii];
-                    if (arg.Value?.GetType().Name?.ToLower() == "boolean")
+                    if (arg.Value?.GetType().Name.ToLower() == "boolean")
                     {
                         includeAttributes = (bool)arg.Value;
                     }
@@ -153,7 +147,7 @@ namespace TanglAnalyzer
                 for (var ii = 1 + (stronglyTyped ? 1 : 0); ii < tangl.ConstructorArguments.Length; ii++)
                 {
                     var arg = tangl.ConstructorArguments[ii];
-                    if (arg.Value?.GetType().Name?.ToLower() == "string")
+                    if (arg.Value?.GetType().Name.ToLower() == "string")
                     {
                         except = (string)arg.Value;
                     }
@@ -178,7 +172,7 @@ namespace TanglAnalyzer
                     return;
                 }
                 var targetType = (INamedTypeSymbol)target.Type;
-                if (!targetType.IsGenericType && !SymbolEqualityComparer.Default.Equals(target.Type, propertySymbol.Type) || 
+                if (!targetType.IsGenericType && !SymbolEqualityComparer.Default.Equals(target.Type, propertySymbol.Type) ||
                     (targetType.IsGenericType && target.Type.ToDisplayString() != propertySymbol.Type.ToDisplayString()))
                 {
                     var propertyBag = ImmutableDictionary<string, string>.Empty
@@ -189,20 +183,21 @@ namespace TanglAnalyzer
                     return;
                 }
 
-                
-                var exceptions = except.Split(',').Where(s => !string.IsNullOrWhiteSpace(s));
-                if (includeAttributes || exceptions.Any()) {
-                    var propertyAttributes = propertySymbol.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
-                    var targetAttributes = target.GetAttributes().Where(a => a.AttributeClass.Name != "TanglAttribute");
+
+                var exceptions = except.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+                if (includeAttributes || exceptions.Any())
+                {
+                    var propertyAttributes = propertySymbol.GetAttributes().Where(a => a.AttributeClass?.Name != "TanglAttribute").ToList();
+                    var targetAttributes = target.GetAttributes().Where(a => a.AttributeClass?.Name != "TanglAttribute").ToList();
 
                     // Determine if tangl is missing attributes specified in the target
                     var missingAttributes = includeAttributes
-                        ? targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name) && !exceptions.Contains(t.AttributeClass.Name))
-                        : targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass.Name != t.AttributeClass.Name) && exceptions.Contains(t.AttributeClass.Name));
+                        ? targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass?.Name != t.AttributeClass?.Name) && !exceptions.Contains(t.AttributeClass?.Name)).ToList()
+                        : targetAttributes.Where(t => propertyAttributes.All(a => a.AttributeClass?.Name != t.AttributeClass?.Name) && exceptions.Contains(t.AttributeClass?.Name)).ToList();
                     if (missingAttributes.Any())
                     {
                         var attr = missingAttributes.First();
-                        var targetAttributeText = attr.ApplicationSyntaxReference.SyntaxTree.ToString().
+                        var targetAttributeText = attr.ApplicationSyntaxReference?.SyntaxTree.ToString().
                                     Substring(attr.ApplicationSyntaxReference.Span.Start - 1, attr.ApplicationSyntaxReference.Span.Length + 2);
                         var propertyBag = ImmutableDictionary<string, string>.Empty.Add("AttributeToInsert", targetAttributeText);
                         var diagnostic = Diagnostic.Create(MissingAttributesRule, propertySymbol.Locations[0], propertyBag, attr.ToString());
@@ -210,23 +205,42 @@ namespace TanglAnalyzer
                         return;
                     }
 
-                    //// Determine if tangl has differing arguments
+                    // Determine if tangl has differing arguments
                     var foundAttributes = includeAttributes
-                        ? targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass.Name == t.AttributeClass.Name) && !exceptions.Contains(t.AttributeClass.Name))
-                        : targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass.Name == t.AttributeClass.Name) && exceptions.Contains(t.AttributeClass.Name));
+                        ? targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass?.Name == t.AttributeClass?.Name) && !exceptions.Contains(t.AttributeClass?.Name)).ToList()
+                        : targetAttributes.Where(t => propertyAttributes.Any(a => a.AttributeClass?.Name == t.AttributeClass?.Name) && exceptions.Contains(t.AttributeClass?.Name)).ToList();
                     foreach (var targetAttribute in foundAttributes)
                     {
-                        var propertyAttribute = propertyAttributes.Single(pa => pa.AttributeClass.Name == targetAttribute.AttributeClass.Name);
-                        var targetAttributeText = targetAttribute.ApplicationSyntaxReference.SyntaxTree.ToString().
-                            Substring(targetAttribute.ApplicationSyntaxReference.Span.Start - 1, targetAttribute.ApplicationSyntaxReference.Span.Length + 2);
-                        var propertyAttributeText = propertyAttribute.ApplicationSyntaxReference.SyntaxTree.ToString().
+                        var propertyAttribute = propertyAttributes.Single(pa => pa.AttributeClass?.Name == targetAttribute.AttributeClass?.Name);
+                        var propertyAttributeText = propertyAttribute.ApplicationSyntaxReference?.SyntaxTree.ToString().
                             Substring(propertyAttribute.ApplicationSyntaxReference.Span.Start - 1, propertyAttribute.ApplicationSyntaxReference.Span.Length + 2);
+
+                        // If compiling, rather than analyzing while editing in Visual Studio
+                        if (targetAttribute.ApplicationSyntaxReference == null)
+                        {
+                            var targetArgs = string.Join(",",
+                                targetAttribute.ConstructorArguments.Select(a => a.Value?.ToString()));
+                            var propertyAttributeArgs = string.Join(",",
+                                propertyAttribute.ConstructorArguments.Select(a => a.Value?.ToString()));
+                            if (targetArgs != propertyAttributeArgs)
+                            {
+                                var diagnostic = Diagnostic.Create(DifferingAttributesRule, propertySymbol.Locations[0], $"{propertyName}: {propertyAttributeText} {propertyAttributeArgs} vs {targetArgs}");
+                                context.ReportDiagnostic(diagnostic);
+                                return;
+                            }
+                            continue;
+                        }
+
+                        // If analyzing while editing in Visual Studio
+                        var targetAttributeText = targetAttribute.ApplicationSyntaxReference?.SyntaxTree.ToString().
+                            Substring(targetAttribute.ApplicationSyntaxReference.Span.Start - 1, targetAttribute.ApplicationSyntaxReference.Span.Length + 2);
+
                         if (targetAttributeText != propertyAttributeText)
                         {
                             var propertyBag = ImmutableDictionary<string, string>.Empty
                                     .Add("AttributeToReplace", propertyAttributeText)
                                     .Add("AttributeReplacement", targetAttributeText);
-                            var diagnostic = Diagnostic.Create(DifferingAttributesRule, propertySymbol.Locations[0], propertyBag, targetAttribute.ToString());
+                            var diagnostic = Diagnostic.Create(DifferingAttributesRule, propertySymbol.Locations[0], propertyBag, $"{propertyName}: {propertyAttributeText} vs {targetAttributeText}");
                             context.ReportDiagnostic(diagnostic);
                             return;
                         }
