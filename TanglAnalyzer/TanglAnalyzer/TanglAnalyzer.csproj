@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <PackageId>TanglAnalyzer</PackageId>
-    <PackageVersion>1.2.0.0</PackageVersion>
+    <PackageVersion>1.2.1.0</PackageVersion>
     <Authors>Matthew Nicholson Beer</Authors>
     <PackageProjectUrl>https://github.com/mnbeer/Tangl</PackageProjectUrl>
     <PackageIconUrl></PackageIconUrl>
